@@ -22,26 +22,30 @@
       lib = final.lib;
 
       # --- Build the GNOME extension from repo:/extension and expose its UUID
-      voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
-        pname = "voxvibe-gnome-extension";
-        version = "git-2025-09-19";
-        src = final.fetchFromGitHub {
-          owner = "jdcockrill";
-          repo = "voxvibe";
-          # pin a commit you like; lib.fakeSha256 lets you fill later via nix error output
-          rev = "main";
-          sha256 = "sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=";
-        };
-        nativeBuildInputs = [ final.jq ];
-        installPhase = ''
-          set -euo pipefail
-          cd extension
-          uuid="$(jq -r .uuid metadata.json)"
-          install -Dm644 * -t "$out/share/gnome-shell/extensions/$uuid/"
-          mkdir -p "$out/nix-support"
-          printf "%s" "$uuid" > "$out/nix-support/uuid"
-        '';
-      };
+voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
+  pname = "voxvibe-gnome-extension";
+  version = "git-2025-09-19";
+  src = final.fetchFromGitHub {
+    owner = "jdcockrill";
+    repo  = "voxvibe";
+    rev   = "main";
+    sha256 = "YOUR_REAL_SHA256";
+  };
+
+  nativeBuildInputs = [ final.jq ];
+
+  # Don’t run the Makefile, just copy the extension directory
+  dontBuild = true;
+
+  installPhase = ''
+    set -euo pipefail
+    cd extension
+    uuid="$(jq -r .uuid metadata.json)"
+    install -Dm644 * -t "$out/share/gnome-shell/extensions/$uuid/"
+    mkdir -p "$out/nix-support"
+    printf "%s" "$uuid" > "$out/nix-support/uuid"
+  '';
+};
 
       # --- Build VoxVibe Python app (repo:/app) with faster-whisper + CUDA CTranslate2
       voxvibe = final.python312Packages.buildPythonApplication {
