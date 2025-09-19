@@ -60,6 +60,9 @@ voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
         # The Python sources live under app/
         sourceRoot = "source/app";
 
+        pyproject = false;
+        build-system = [ final.python312Packages.setuptools ];
+
         # Faster-whisper needs ctranslate2 compiled with CUDA for GPU use.
         propagatedBuildInputs = with final.python312Packages; [
           (faster-whisper.override {
