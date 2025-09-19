@@ -29,7 +29,7 @@ voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
     owner = "jdcockrill";
     repo  = "voxvibe";
     rev   = "main";
-    sha256 = lib.fakeSha256;
+    sha256 = "sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=";
   };
 
   nativeBuildInputs = [ final.jq ];
