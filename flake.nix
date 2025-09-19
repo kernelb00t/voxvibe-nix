@@ -30,7 +30,7 @@
           repo = "voxvibe";
           # pin a commit you like; lib.fakeSha256 lets you fill later via nix error output
           rev = "main";
-          sha256 = sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=;
+          sha256 = "sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=";
         };
         nativeBuildInputs = [ final.jq ];
         installPhase = ''
