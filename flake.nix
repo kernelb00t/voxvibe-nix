@@ -25,11 +25,12 @@
         let
           # Create a CUDA-enabled ctranslate2
           ctranslate2-cuda = final.ctranslate2.override { withCUDA = true; };
-          
+
           # Create a faster-whisper that uses CUDA ctranslate2
-          faster-whisper-cuda = final.python312Packages.faster-whisper.overridePythonAttrs (old: {
-            dependencies = (old.dependencies or []) ++ [ ctranslate2-cuda ];
-          });
+          faster-whisper-cuda =
+            final.python312Packages.faster-whisper.overridePythonAttrs (old: {
+              dependencies = (old.dependencies or [ ]) ++ [ ctranslate2-cuda ];
+            });
 
           # --- Build the GNOME extension from repo:/extension and expose its UUID
           voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
@@ -74,21 +75,16 @@
             # This IS a pyproject-based package
             pyproject = true;
 
-            # Patch pyproject.toml to remove unavailable dependencies and fix version constraints
+            # Patch pyproject.toml to make mistralai optional since it's not available in nixpkgs
             postPatch = ''
-              # Remove litellm and mistralai dependencies (not available in nixpkgs)
-              sed -i '/litellm/d' pyproject.toml
-              sed -i '/mistralai/d' pyproject.toml
-              # Relax pyqt6 version constraint
-              sed -i 's/pyqt6>=6.9.1/pyqt6>=6.9.0/' pyproject.toml
+              # Make mistralai optional since it's not available in current nixpkgs
+              sed -i 's/mistralai>=1.0.0/# mistralai>=1.0.0  # commented out - not available in nixpkgs/' pyproject.toml
             '';
 
             # Use the correct build system (hatchling, as specified in pyproject.toml)
             build-system = with final.python312Packages; [ hatchling ];
 
             # Dependencies with CUDA-enabled ctranslate2
-            # Note: litellm and mistralai are not available in nixpkgs, so we skip them
-            # This may affect post-processing features
             dependencies = with final.python312Packages; [
               final.faster-whisper-cuda
               sounddevice
@@ -97,10 +93,9 @@
               qt-material
               pynput
               numpy
+              litellm
+              # mistralai not included - not available in current nixpkgs
             ];
-
-            # Skip dependency checking for unavailable packages
-            pythonRuntimeDepsCheck = false; # disable runtime deps check
 
             nativeBuildInputs = [ final.makeWrapper ];
 
@@ -110,8 +105,8 @@
                 --prefix LD_LIBRARY_PATH : ${final.cudaPackages.cudatoolkit}/lib:${final.cudaPackages.cudnn}/lib
             '';
           };
-        in { 
-          inherit voxvibe-gnome-extension voxvibe; 
+        in {
+          inherit voxvibe-gnome-extension voxvibe;
           inherit ctranslate2-cuda faster-whisper-cuda;
         };
 
