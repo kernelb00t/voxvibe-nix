@@ -65,9 +65,8 @@ voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
 
         # Faster-whisper needs ctranslate2 compiled with CUDA for GPU use.
         propagatedBuildInputs = with final.python312Packages; [
-          (faster-whisper.override {
-            ctranslate2 = final.ctranslate2.override { withCUDA = true; };
-          })
+          faster-whisper
+          (final.ctranslate2.override { withCUDA = true; })
           sounddevice
           # a couple of likely deps for tray/dbus/glib; harmless if unused:
           pygobject3
