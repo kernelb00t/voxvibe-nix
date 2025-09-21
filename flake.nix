@@ -52,16 +52,16 @@
               set -euo pipefail
               cd extension
               uuid="$(jq -r .uuid metadata.json)"
-              
+
               # Install extension files
               mkdir -p "$out/share/gnome-shell/extensions/$uuid"
               cp extension.js metadata.json README.md "$out/share/gnome-shell/extensions/$uuid/"
-              
+
               # Install and compile GSettings schema
               mkdir -p "$out/share/glib-2.0/schemas"
               cp org.gnome.shell.extensions.voxvibe.gschema.xml "$out/share/glib-2.0/schemas/"
               glib-compile-schemas "$out/share/glib-2.0/schemas"
-              
+
               # Save UUID for module system
               mkdir -p "$out/nix-support"
               printf "%s" "$uuid" > "$out/nix-support/uuid"
