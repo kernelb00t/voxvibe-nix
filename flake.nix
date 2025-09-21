@@ -74,10 +74,21 @@
             # This IS a pyproject-based package
             pyproject = true;
 
+            # Patch pyproject.toml to remove unavailable dependencies and fix version constraints
+            postPatch = ''
+              # Remove litellm and mistralai dependencies (not available in nixpkgs)
+              sed -i '/litellm/d' pyproject.toml
+              sed -i '/mistralai/d' pyproject.toml
+              # Relax pyqt6 version constraint
+              sed -i 's/pyqt6>=6.9.1/pyqt6>=6.9.0/' pyproject.toml
+            '';
+
             # Use the correct build system (hatchling, as specified in pyproject.toml)
             build-system = with final.python312Packages; [ hatchling ];
 
             # Dependencies with CUDA-enabled ctranslate2
+            # Note: litellm and mistralai are not available in nixpkgs, so we skip them
+            # This may affect post-processing features
             dependencies = with final.python312Packages; [
               final.faster-whisper-cuda
               sounddevice
@@ -86,10 +97,10 @@
               qt-material
               pynput
               numpy
-              # Note: mistralai and litellm may need to be packaged separately if not available
-              # mistralai
-              # litellm
             ];
+
+            # Skip dependency checking for unavailable packages
+            pythonRuntimeDepsCheck = false; # disable runtime deps check
 
             nativeBuildInputs = [ final.makeWrapper ];
 
