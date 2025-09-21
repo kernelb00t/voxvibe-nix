@@ -48,44 +48,49 @@ voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
 };
 
       # --- Build VoxVibe Python app (repo:/app) with faster-whisper + CUDA CTranslate2
-      voxvibe = final.python312Packages.buildPythonApplication {
-        pname = "voxvibe";
-        version = "git-2025-09-19";
-        src = final.fetchFromGitHub {
-          owner = "jdcockrill";
-          repo  = "voxvibe";
-          rev   = "main";
-          sha256 = "sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=";
-        };
-        # The Python sources live under app/
-        sourceRoot = "source/app";
+# Replace lines 51-86 with this corrected version:
+voxvibe = final.python312Packages.buildPythonApplication {
+  pname = "voxvibe";
+  version = "git-2025-09-19";
+  src = final.fetchFromGitHub {
+    owner = "jdcockrill";
+    repo  = "voxvibe";
+    rev   = "main";
+    sha256 = "sha256-uf0c0eJiLEYEijHJiutfZzVg6cnZVBwBDKtpcY8H4dI=";
+  };
+  
+  # The Python sources live under app/
+  sourceRoot = "source/app";
 
-        pyproject = false;
-        build-system = [ final.python312Packages.setuptools ];
+  # This IS a pyproject-based package
+  pyproject = true;
+  
+  # Use the correct build system (hatchling, as specified in pyproject.toml)
+  build-system = with final.python312Packages; [ hatchling ];
 
-        # Faster-whisper needs ctranslate2 compiled with CUDA for GPU use.
-        propagatedBuildInputs = with final.python312Packages; [
-          faster-whisper
-          (final.ctranslate2.override { withCUDA = true; })
-          sounddevice
-          # a couple of likely deps for tray/dbus/glib; harmless if unused:
-          pygobject3
-          dbus-python
-          tomli
-          click
-          requests
-        ];
+  # Dependencies with CUDA-enabled ctranslate2
+  dependencies = with final.python312Packages; [
+    (faster-whisper.override {
+      ctranslate2 = final.ctranslate2.override { withCUDA = true; };
+    })
+    sounddevice
+    soundfile
+    pyqt6
+    qt-material
+    pynput
+    numpy
+    mistralai
+    litellm
+  ];
 
-        nativeBuildInputs = [ final.makeWrapper ];
-        # Make sure CUDA & cuDNN are visible at runtime
-        postInstall = ''
-          wrapProgram "$out/bin/voxvibe" \
-            --prefix LD_LIBRARY_PATH : ${final.cudaPackages.cudatoolkit}/lib:${final.cudaPackages.cudnn}/lib
-        '';
-      };
-    in {
-      inherit voxvibe voxvibe-gnome-extension;
-    };
+  nativeBuildInputs = [ final.makeWrapper ];
+  
+  # Make sure CUDA & cuDNN are visible at runtime
+  postInstall = ''
+    wrapProgram "$out/bin/voxvibe" \
+      --prefix LD_LIBRARY_PATH : ${final.cudaPackages.cudatoolkit}/lib:${final.cudaPackages.cudnn}/lib
+  '';
+};
 
     # --- Home-Manager module (shared)
     homeManagerModules.voxvibe = { config, lib, pkgs, ... }:
