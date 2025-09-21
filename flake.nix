@@ -81,6 +81,10 @@
               sed -i '/mistralai>=1.0.0/d' pyproject.toml
               # Relax pyqt6 version constraint to match available version in nixpkgs
               sed -i 's/pyqt6>=6.9.1/pyqt6>=6.9.0/' pyproject.toml
+
+              # Make mistralai import optional to avoid runtime errors
+              # Comment out the import and add try-except wrapper
+              sed -i 's/from mistralai import Mistral/# from mistralai import Mistral\nMistral = None  # mistralai not available in nixpkgs/' voxvibe/transcription/voxtral_transcriber.py
             '';
 
             # Use the correct build system (hatchling, as specified in pyproject.toml)
