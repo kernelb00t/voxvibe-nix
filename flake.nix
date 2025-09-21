@@ -23,6 +23,14 @@
     in {
       overlays.default = final: prev:
         let
+          # Create a CUDA-enabled ctranslate2
+          ctranslate2-cuda = final.ctranslate2.override { withCUDA = true; };
+          
+          # Create a faster-whisper that uses CUDA ctranslate2
+          faster-whisper-cuda = final.python312Packages.faster-whisper.overridePythonAttrs (old: {
+            dependencies = (old.dependencies or []) ++ [ ctranslate2-cuda ];
+          });
+
           # --- Build the GNOME extension from repo:/extension and expose its UUID
           voxvibe-gnome-extension = final.stdenvNoCC.mkDerivation {
             pname = "voxvibe-gnome-extension";
@@ -71,9 +79,7 @@
 
             # Dependencies with CUDA-enabled ctranslate2
             dependencies = with final.python312Packages; [
-              (faster-whisper.override {
-                ctranslate2 = final.ctranslate2.override { withCUDA = true; };
-              })
+              final.faster-whisper-cuda
               sounddevice
               soundfile
               pyqt6
@@ -93,7 +99,10 @@
                 --prefix LD_LIBRARY_PATH : ${final.cudaPackages.cudatoolkit}/lib:${final.cudaPackages.cudnn}/lib
             '';
           };
-        in { inherit voxvibe-gnome-extension voxvibe; };
+        in { 
+          inherit voxvibe-gnome-extension voxvibe; 
+          inherit ctranslate2-cuda faster-whisper-cuda;
+        };
 
       # --- Home-Manager module (shared)
       homeManagerModules.voxvibe = { config, lib, pkgs, ... }:
