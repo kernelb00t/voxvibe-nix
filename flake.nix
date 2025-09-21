@@ -79,6 +79,8 @@
             postPatch = ''
               # Remove mistralai dependency since it's not available in current nixpkgs
               sed -i '/mistralai>=1.0.0/d' pyproject.toml
+              # Relax pyqt6 version constraint to match available version in nixpkgs
+              sed -i 's/pyqt6>=6.9.1/pyqt6>=6.9.0/' pyproject.toml
             '';
 
             # Use the correct build system (hatchling, as specified in pyproject.toml)
