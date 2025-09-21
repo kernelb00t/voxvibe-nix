@@ -75,10 +75,10 @@
             # This IS a pyproject-based package
             pyproject = true;
 
-            # Patch pyproject.toml to make mistralai optional since it's not available in nixpkgs
+            # Patch pyproject.toml to remove mistralai since it's not available in nixpkgs
             postPatch = ''
-              # Make mistralai optional since it's not available in current nixpkgs
-              sed -i 's/mistralai>=1.0.0/# mistralai>=1.0.0  # commented out - not available in nixpkgs/' pyproject.toml
+              # Remove mistralai dependency since it's not available in current nixpkgs
+              sed -i '/mistralai>=1.0.0/d' pyproject.toml
             '';
 
             # Use the correct build system (hatchling, as specified in pyproject.toml)
